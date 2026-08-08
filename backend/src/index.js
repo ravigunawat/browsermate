@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const Anthropic = require("@anthropic-ai/sdk");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -9,9 +9,8 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json({ limit: "2mb" }));
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 // Simple in-memory rate limiting per extension install (very lightweight, not for production scale)
 const requestCounts = new Map();
@@ -52,18 +51,16 @@ app.post("/api/chat", rateLimit, async (req, res) => {
     }
 
     const systemPrompt = pageContext
-      ? `You are BrowserMate, a helpful AI assistant embedded in the user's browser. The user is currently viewing a webpage. Here is the visible page content for context (use it only if relevant to the user's question):\n\n${pageContext.slice(0, 6000)}`
-      : "You are BrowserMate, a helpful AI assistant embedded in the user's browser.";
+      ? `You are BrowserMate, a helpful AI assistant embedded in the user's browser. The user is currently viewing a webpage. Here is the visible page content for context (use it only if relevant to the user's question):\n\n${pageContext.slice(0, 6000)}\n\n`
+      : "You are BrowserMate, a helpful AI assistant embedded in the user's browser.\n\n";
 
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: messages.map((m) => ({ role: m.role, content: m.content })),
-    });
+    const conversationText =
+      systemPrompt +
+      messages.map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`).join("\n");
 
-    const textBlock = response.content.find((b) => b.type === "text");
-    res.json({ reply: textBlock ? textBlock.text : "" });
+    const result = await model.generateContent(conversationText);
+    const reply = result.response.text();
+    res.json({ reply });
   } catch (err) {
     console.error("[Chat] error:", err.message);
     res.status(500).json({ error: "Failed to get AI response" });
@@ -91,14 +88,9 @@ app.post("/api/quick-action", rateLimit, async (req, res) => {
       return res.status(400).json({ error: "Unknown action" });
     }
 
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 512,
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const textBlock = response.content.find((b) => b.type === "text");
-    res.json({ reply: textBlock ? textBlock.text : "" });
+    const result = await model.generateContent(prompt);
+    const reply = result.response.text();
+    res.json({ reply });
   } catch (err) {
     console.error("[QuickAction] error:", err.message);
     res.status(500).json({ error: "Failed to process quick action" });

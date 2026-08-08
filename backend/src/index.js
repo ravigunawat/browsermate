@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json({ limit: "2mb" }));
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 // Simple in-memory rate limiting per extension install (very lightweight, not for production scale)
 const requestCounts = new Map();

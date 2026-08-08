@@ -1,6 +1,6 @@
 // ==== CONFIG ====
 // Replace with your deployed backend URL once live on Render.
-const BACKEND_URL = "http://localhost:4000"; // e.g. "https://browsermate-backend.onrender.com"
+const BACKEND_URL = "https://browsermate-backend.onrender.com"; // e.g. "https://browsermate-backend.onrender.com"
 const CLIENT_ID_KEY = "bm_client_id";
 
 const chatLog = document.getElementById("chatLog");

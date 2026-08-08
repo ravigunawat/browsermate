@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BrowserMate</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <span class="dot"></span>
+        <span>BrowserMate</span>
+      </div>
+      <button id="clearBtn" class="icon-btn" title="Clear chat">Clear</button>
+    </header>
+
+    <div class="quick-actions">
+      <button class="qa-btn" data-action="summarize">Summarize page</button>
+      <button class="qa-btn" data-action="explain-selection">Explain selection</button>
+    </div>
+
+    <div id="chatLog" class="chat-log"></div>
+
+    <div id="typingIndicator" class="typing hidden">BrowserMate is thinking…</div>
+
+    <form id="chatForm" class="composer">
+      <textarea id="chatInput" placeholder="Ask anything, or about this page…" rows="1"></textarea>
+      <button type="submit" id="sendBtn">Send</button>
+    </form>
+  </div>
+  <script src="sidepanel.js"></script>
+</body>
+</html>
